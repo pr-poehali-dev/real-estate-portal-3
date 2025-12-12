@@ -28,6 +28,7 @@ const Contacts = () => {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-foreground hover:text-primary transition">Главная</Link>
+            <Link to="/catalog" className="text-foreground hover:text-primary transition">Каталог</Link>
             <Link to="/applications" className="text-foreground hover:text-primary transition">Заявки</Link>
             <Link to="/contacts" className="text-primary font-medium">Контакты</Link>
           </nav>

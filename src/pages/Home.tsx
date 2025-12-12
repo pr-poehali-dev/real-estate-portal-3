@@ -14,6 +14,7 @@ const Home = () => {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-foreground hover:text-primary transition">Главная</Link>
+            <Link to="/catalog" className="text-foreground hover:text-primary transition">Каталог</Link>
             <Link to="/applications" className="text-foreground hover:text-primary transition">Заявки</Link>
             <Link to="/contacts" className="text-foreground hover:text-primary transition">Контакты</Link>
           </nav>
@@ -36,12 +37,20 @@ const Home = () => {
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
             Система учета заявок на аренду и покупку недвижимости с автоматической оценкой стоимости
           </p>
-          <Link to="/applications">
-            <Button size="lg" variant="secondary" className="text-lg px-8">
-              Оставить заявку
-              <Icon name="ArrowRight" className="ml-2" size={20} />
-            </Button>
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link to="/catalog">
+              <Button size="lg" variant="secondary" className="text-lg px-8">
+                Смотреть каталог
+                <Icon name="Home" className="ml-2" size={20} />
+              </Button>
+            </Link>
+            <Link to="/applications">
+              <Button size="lg" variant="outline" className="text-lg px-8 bg-white/10 hover:bg-white/20 text-white border-white">
+                Оставить заявку
+                <Icon name="ArrowRight" className="ml-2" size={20} />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 

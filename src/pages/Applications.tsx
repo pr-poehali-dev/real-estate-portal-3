@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import funcUrls from "../../backend/func2url.json";
 
@@ -24,6 +24,23 @@ const Applications = () => {
   const [propertyType, setPropertyType] = useState("");
   const [area, setArea] = useState("");
   const [estimatedValue, setEstimatedValue] = useState<number | null>(null);
+
+  useEffect(() => {
+    const savedProperty = sessionStorage.getItem('selectedProperty');
+    if (savedProperty) {
+      const property = JSON.parse(savedProperty);
+      setOperationType(property.operationType);
+      setPropertyType(property.type);
+      setArea(property.area.toString());
+      setFormData(prev => ({
+        ...prev,
+        location: property.location,
+        description: property.description,
+      }));
+      setEstimatedValue(property.price);
+      sessionStorage.removeItem('selectedProperty');
+    }
+  }, []);
 
   const calculateEstimate = () => {
     if (!area || !propertyType || !operationType) return;
@@ -121,6 +138,7 @@ const Applications = () => {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-foreground hover:text-primary transition">Главная</Link>
+            <Link to="/catalog" className="text-foreground hover:text-primary transition">Каталог</Link>
             <Link to="/applications" className="text-primary font-medium">Заявки</Link>
             <Link to="/contacts" className="text-foreground hover:text-primary transition">Контакты</Link>
           </nav>
