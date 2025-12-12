@@ -6,10 +6,12 @@ import Icon from "@/components/ui/icon";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import funcUrls from "../../backend/func2url.json";
 
 const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,7 +20,7 @@ const Register = () => {
     confirmPassword: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -30,11 +32,46 @@ const Register = () => {
       return;
     }
 
-    toast({
-      title: "Регистрация успешна",
-      description: "Ваш аккаунт создан. Войдите в систему.",
-    });
-    navigate("/login");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(funcUrls.register, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: "Регистрация успешна",
+          description: "Ваш аккаунт создан. Войдите в систему.",
+        });
+        navigate("/login");
+      } else {
+        toast({
+          title: "Ошибка регистрации",
+          description: data.error || "Не удалось создать аккаунт",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось выполнить регистрацию",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -105,8 +142,8 @@ const Register = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Зарегистрироваться
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

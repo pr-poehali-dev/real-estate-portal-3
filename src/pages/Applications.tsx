@@ -8,9 +8,18 @@ import Icon from "@/components/ui/icon";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import funcUrls from "../../backend/func2url.json";
 
 const Applications = () => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    description: "",
+  });
   const [operationType, setOperationType] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [area, setArea] = useState("");
@@ -32,12 +41,74 @@ const Applications = () => {
     setEstimatedValue(Math.round(calculated));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Заявка отправлена",
-      description: "Наш менеджер свяжется с вами в ближайшее время",
-    });
+    
+    if (!estimatedValue) {
+      toast({
+        title: "Ошибка",
+        description: "Сначала рассчитайте оценку",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(funcUrls.applications, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          operation_type: operationType,
+          property_type: propertyType,
+          area: parseFloat(area),
+          location: formData.location,
+          description: formData.description,
+          estimated_value: estimatedValue,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: "Заявка отправлена",
+          description: "Наш менеджер свяжется с вами в ближайшее время",
+        });
+        
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          location: "",
+          description: "",
+        });
+        setOperationType("");
+        setPropertyType("");
+        setArea("");
+        setEstimatedValue(null);
+      } else {
+        toast({
+          title: "Ошибка",
+          description: data.error || "Не удалось отправить заявку",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить заявку",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,17 +147,37 @@ const Applications = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">ФИО</Label>
-                    <Input id="name" placeholder="Иванов Иван" required />
+                    <Input 
+                      id="name" 
+                      placeholder="Иванов Иван"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      required 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Телефон</Label>
-                    <Input id="phone" type="tel" placeholder="+7 (999) 123-45-67" required />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+7 (999) 123-45-67"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      required 
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="your@email.com" required />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required 
+                  />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -141,7 +232,13 @@ const Applications = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="location">Местоположение</Label>
-                    <Input id="location" placeholder="Москва, ул. Ленина" required />
+                    <Input 
+                      id="location" 
+                      placeholder="Москва, ул. Ленина"
+                      value={formData.location}
+                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      required 
+                    />
                   </div>
                 </div>
 
@@ -150,6 +247,8 @@ const Applications = () => {
                   <Textarea
                     id="description"
                     placeholder="Опишите дополнительные характеристики объекта"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                     rows={4}
                   />
                 </div>

@@ -6,28 +6,58 @@ import Icon from "@/components/ui/icon";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import funcUrls from "../../backend/func2url.json";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    if (email === "admin@estate.com" && password === "admin") {
-      toast({
-        title: "Успешный вход",
-        description: "Добро пожаловать в систему!",
+    try {
+      const response = await fetch(funcUrls.auth, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-      navigate("/admin");
-    } else {
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        toast({
+          title: "Успешный вход",
+          description: `Добро пожаловать, ${data.user.name}!`,
+        });
+        
+        if (data.user.role === 'admin') {
+          navigate("/admin");
+        } else {
+          navigate("/applications");
+        }
+      } else {
+        toast({
+          title: "Ошибка входа",
+          description: data.error || "Неверный email или пароль",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Вход выполнен",
-        description: "Добро пожаловать!",
+        title: "Ошибка",
+        description: "Не удалось выполнить вход",
+        variant: "destructive",
       });
-      navigate("/applications");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,8 +97,8 @@ const Login = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Войти
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Вход..." : "Войти"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
